@@ -2,12 +2,15 @@
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System;
 
 public class GameManager : MonoBehaviour {
 
 	// make game manager public static so can access this from other scripts
 	public static GameManager gm;
-
+	public static event Action<GameState> OnGameStateChanged;
+	public static GameManager Instance;
+	public GameState gameState;
 	// public variables
 	public int score=0;
 
@@ -57,7 +60,37 @@ public class GameManager : MonoBehaviour {
 		// inactivate the nextLevelButtons gameObject, if it is set
 		if (nextLevelButtons)
 			nextLevelButtons.SetActive (false);
+		UpdateGameState(GameState.Playing);
 	}
+
+	public void UpdateGameState(GameState newState)
+	{
+		switch (newState)
+		{
+			case GameState.Idle:
+				gameState = GameState.Idle;
+				break;
+			case GameState.Playing:
+				gameState = GameState.Playing;
+				break;
+			case GameState.WinLevel:
+				gameState = GameState.WinLevel;
+				break;
+			case GameState.LoseLevel:
+				gameState = GameState.LoseLevel;
+				break;
+			case GameState.WinGame:
+				gameState = GameState.WinGame;
+				break;
+			case GameState.GameOver:
+				gameState = GameState.GameOver;
+				break;
+		}
+
+		OnGameStateChanged?.Invoke(newState);
+	}
+
+
 
 	// this is the main game event loop
 	void Update () {
@@ -65,7 +98,10 @@ public class GameManager : MonoBehaviour {
 			if (canBeatLevel && (score >= beatLevelScore)) {  // check to see if beat game
 				BeatLevel ();
 			} else if (currentTime < 0) { // check to see if timer has run out
-				EndGame ();
+				if (score < 30)
+					EndGame();
+				else
+					BeatLevel();
 			} else { // game playing state, so update the timer
 				currentTime -= Time.deltaTime;
 				if(mainTimerDisplay)
@@ -93,6 +129,7 @@ public class GameManager : MonoBehaviour {
 		// reduce the pitch of the background music, if it is set 
 		if (musicAudioSource)
 			musicAudioSource.pitch = 0.5f; // slow down the music
+		UpdateGameState(GameState.LoseLevel);
 	}
 	
 	void BeatLevel() {
@@ -113,6 +150,7 @@ public class GameManager : MonoBehaviour {
 		// reduce the pitch of the background music, if it is set 
 		if (musicAudioSource)
 			musicAudioSource.pitch = 0.5f; // slow down the music
+		UpdateGameState(GameState.WinLevel);
 	}
 
 	// public function that can be called to update the score or time
@@ -149,4 +187,15 @@ public class GameManager : MonoBehaviour {
 	}
 	
 
+}
+
+
+public enum GameState
+{
+	Idle,
+	Playing,
+	WinLevel,
+	LoseLevel,
+	WinGame,
+	GameOver
 }

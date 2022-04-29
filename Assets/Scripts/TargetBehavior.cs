@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 public class TargetBehavior : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class TargetBehavior : MonoBehaviour
 	// when collided with another gameObject
 	void OnCollisionEnter (Collision newCollision)
 	{
+		Console.WriteLine("collison happend");
 		// exit if there is a game manager and the game is over
 		if (GameManager.gm) {
 			if (GameManager.gm.gameIsOver)
